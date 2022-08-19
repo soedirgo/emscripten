@@ -50,6 +50,7 @@ from tools import js_manipulation
 from tools import wasm2c
 from tools import webassembly
 from tools import config
+from tools import feature_matrix
 from tools.settings import settings, MEM_SIZE_SETTINGS, COMPILE_TIME_SETTINGS
 from tools.utils import read_file, write_file, read_binary
 
@@ -829,7 +830,7 @@ def get_target_flags():
 
 
 def get_clang_flags(user_args):
-  flags = get_target_flags()
+  flags = get_target_flags() + feature_matrix.get_feature_flags()
 
   # if exception catching is disabled, we can prevent that code from being
   # generated in the frontend
@@ -1454,7 +1455,7 @@ def phase_setup(options, state, newargs, user_settings):
             'unused-command-line-argument',
             "compiler flag ignored during linking: '%s'" % arg)
 
-  if settings.MAIN_MODULE or settings.SIDE_MODULE:
+  if settings.MAIN_MODULE or settings.SIDE_MODULE or '-fPIC' in newargs:
     settings.RELOCATABLE = 1
 
   # Pthreads and Wasm Workers require targeting shared Wasm memory (SAB).

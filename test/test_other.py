@@ -10612,13 +10612,38 @@ Aborted(Module.arguments has been replaced with plain arguments_ (the initial va
   def test_output_to_nowhere(self):
     self.run_process([EMXX, test_file('hello_world.cpp'), '-o', os.devnull, '-c'])
 
-  # Test that passing -sMIN_X_VERSION=-1 on the command line will result in browser X being not supported at all.
+  # Test that passing -sMIN_X_VERSION=-1 on the command line will result in browser X being not
+  # supported at all.
   # I.e. -sMIN_X_VERSION=-1 is equal to -sMIN_X_VERSION=Infinity
   def test_drop_support_for_browser(self):
     # Test that -1 means "not supported"
     self.run_process([EMCC, test_file('test_html5_core.c'), '-sMIN_IE_VERSION=-1'])
     self.assertContained('allowsDeferredCalls: true', read_file('a.out.js'))
     self.assertNotContained('allowsDeferredCalls: JSEvents.isInternetExplorer()', read_file('a.out.js'))
+
+  def test_browser_version_auto_features(self):
+    def get_enabled_features(filename):
+      with webassembly.Module(filename) as o:
+        features = o.parse_features_section()
+      return [x[1] for x in features if x[0] == '+']
+
+    # By default we expect to see some features disabled since our min browser versions
+    # don't allow them.
+    self.run_process([EMCC, '-mcpu=bleeding-edge', '-c', test_file('hello_world.c')])
+    enabled = get_enabled_features('hello_world.o')
+    self.assertNotContained('nontrapping-fptoint', enabled)
+    self.assertNotContained('mutable-globals', enabled)
+
+    # If we not disable all support for Edge/Safari/Firefox (the browser versions whose
+    # default values preclude bleeding edge features) those feature should now be enabled
+    # by when using -mcpu=bleeding-edge.
+    self.run_process([EMCC, '-mcpu=bleeding-edge', '-c', test_file('hello_world.c'),
+                      '-sMIN_EDGE_VERSION=-1',
+                      '-sMIN_SAFARI_VERSION=-1',
+                      '-sMIN_FIREFOX_VERSION=-1'])
+    enabled = get_enabled_features('hello_world.o')
+    self.assertContained('nontrapping-fptoint', enabled)
+    self.assertContained('mutable-globals', enabled)
 
   def test_errno_type(self):
     create_file('errno_type.c', '''

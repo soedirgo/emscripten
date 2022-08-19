@@ -69,6 +69,13 @@ COMPILE_TIME_SETTINGS = {
     'WASM_OBJECT_FILES',
     'WASM_WORKERS',
 
+    # These are needed at compile time to calculate feature flags
+    'MIN_CHROME_VERSION',
+    'MIN_FIREFOX_VERSION',
+    'MIN_SAFARI_VERSION',
+    'MIN_IE_VERSION',
+    'MIN_EDGE_VERSION',
+
     # Internal settings used during compilation
     'EXCEPTION_CATCHING_ALLOWED',
     'WASM_EXCEPTIONS',
