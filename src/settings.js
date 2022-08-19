@@ -1732,7 +1732,7 @@ var AUTO_NATIVE_LIBRARIES = true;
 // Firefox ESR 60.5 (Firefox 65) was released on 2019-01-29.
 // MAX_INT (0x7FFFFFFF, or -1) specifies that target is not supported.
 // [link]
-var MIN_FIREFOX_VERSION = 65;
+var MIN_FIREFOX_VERSION = 79;
 
 // Specifies the oldest version of desktop Safari to target. Version is encoded
 // in MMmmVV, e.g. 70101 denotes Safari 7.1.1.
@@ -1743,7 +1743,7 @@ var MIN_FIREFOX_VERSION = 65;
 // see https://github.com/emscripten-core/emscripten/pull/7191.
 // MAX_INT (0x7FFFFFFF, or -1) specifies that target is not supported.
 // [link]
-var MIN_SAFARI_VERSION = 120000;
+var MIN_SAFARI_VERSION = 150000;
 
 // Specifies the oldest version of Internet Explorer to target. E.g. pass -s
 // MIN_IE_VERSION = 11 to drop support for IE 10 and older.
@@ -1758,7 +1758,7 @@ var MIN_IE_VERSION = 0x7FFFFFFF;
 // Edge 44.17763 was released on November 13, 2018
 // MAX_INT (0x7FFFFFFF, or -1) specifies that target is not supported.
 // [link]
-var MIN_EDGE_VERSION = 44;
+var MIN_EDGE_VERSION = 0x7FFFFFFF;
 
 // Specifies the oldest version of Chrome. E.g. pass -sMIN_CHROME_VERSION=58 to
 // drop support for Chrome 57 and older.
