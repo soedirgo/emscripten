@@ -482,7 +482,6 @@ class TestCoreBase(RunnerCore):
       self.do_core_test('test_int53.c', interleaved_output=False)
 
   def test_int53_convertI32PairToI53Checked(self):
-    self.emcc_args += ['-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[$convertI32PairToI53Checked]']
     if common.EMTEST_REBASELINE:
       self.run_process([EMCC, test_file('core/test_convertI32PairToI53Checked.cpp'), '-o', 'a.js', '-DGENERATE_ANSWERS'] + self.emcc_args)
       ret = self.run_process(config.NODE_JS + ['a.js'], stdout=PIPE).stdout
@@ -6099,7 +6098,6 @@ Module['onRuntimeInitialized'] = function() {
 
   @also_with_wasm_bigint
   def test_unistd_io(self):
-    self.set_setting('DEFAULT_LIBRARY_FUNCS_TO_INCLUDE', ['$ERRNO_CODES'])
     orig_compiler_opts = self.emcc_args.copy()
     for fs in ['MEMFS', 'NODEFS']:
       self.clear()
@@ -7243,7 +7241,6 @@ void* operator new(size_t size) {
     self.set_setting('WASM_ASYNC_COMPILATION', 0)
     self.set_setting('RESERVED_FUNCTION_POINTERS')
     self.set_setting('EXPORTED_RUNTIME_METHODS', ['callMain'])
-    self.set_setting('DEFAULT_LIBRARY_FUNCS_TO_INCLUDE', ['$addFunction', '$removeFunction'])
     src = test_file('interop/test_add_function.cpp')
     post_js = test_file('interop/test_add_function_post.js')
     self.emcc_args += ['--post-js', post_js]
@@ -7641,7 +7638,6 @@ void* operator new(size_t size) {
     # TODO(): Remove once we make webidl output closure-warning free.
     self.ldflags.remove('-sCLOSURE_WARNINGS=error')
     self.set_setting('WASM_ASYNC_COMPILATION', 0)
-    self.set_setting('DEFAULT_LIBRARY_FUNCS_TO_INCLUDE', ['$intArrayFromString'])
     if self.maybe_closure():
       # avoid closure minified names competing with our test code in the global name space
       self.set_setting('MODULARIZE')
@@ -8529,7 +8525,6 @@ NODEFS is no longer included by default; build with -lnodefs.js
   def test_stack_overflow_check(self):
     self.set_setting('TOTAL_STACK', 1048576)
     self.set_setting('STACK_OVERFLOW_CHECK', 2)
-    self.set_setting('DEFAULT_LIBRARY_FUNCS_TO_INCLUDE', '$allocateUTF8OnStack')
     self.do_runf(test_file('stack_overflow.cpp'), 'Aborted(stack overflow', assert_returncode=NON_ZERO)
 
     self.emcc_args += ['-DONE_BIG_STRING']
@@ -8946,7 +8941,6 @@ NODEFS is no longer included by default; build with -lnodefs.js
     self.emcc_args.append('-fsanitize=address')
     self.set_setting('ALLOW_MEMORY_GROWTH')
     self.set_setting('INITIAL_MEMORY', '300mb')
-    self.set_setting('DEFAULT_LIBRARY_FUNCS_TO_INCLUDE', ['$allocateUTF8OnStack'])
     self.do_runf(test_file('core/test_asan_js_stack_op.c'),
                  expected_output='Hello, World!')
 

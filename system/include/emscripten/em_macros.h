@@ -14,3 +14,9 @@
 #else
 #define EM_IMPORT(NAME)
 #endif
+
+#define EM_JS_DEPS(deps)                  \
+  __attribute__((section("em_lib_deps"))) \
+  __attribute__((used))                   \
+  __attribute__((aligned(1)))             \
+  static char __em_lib_deps[] = deps;

@@ -33,3 +33,5 @@ int main(void) {
   magic_test_function();
   return 0;
 }
+
+EM_JS_DEPS("$ptrToString");

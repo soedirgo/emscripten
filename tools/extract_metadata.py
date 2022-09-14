@@ -3,10 +3,14 @@
 # University of Illinois/NCSA Open Source License.  Both these licenses can be
 # found in the LICENSE file.
 
+import logging
+
 from . import webassembly
 from .webassembly import OpCode, AtomicOpCode, MemoryOpCode
 from .shared import exit_with_error
 from .settings import settings
+
+logger = logging.getLogger('emcc')
 
 
 def skip_function_header(module):
@@ -177,12 +181,15 @@ def data_to_string(data):
   return data
 
 
-def get_asm_strings(module, export_map):
-  if '__start_em_asm' not in export_map or '__stop_em_asm' not in export_map:
+def get_section_strings(module, export_map, section_name):
+  start_name = f'__start_{section_name}'
+  stop_name = f'__stop_{section_name}'
+  if start_name not in export_map or stop_name not in export_map:
+    logger.debug(f'no start/stop symbols found for section: {section_name}')
     return {}
 
-  start = export_map['__start_em_asm']
-  end = export_map['__stop_em_asm']
+  start = export_map[start_name]
+  end = export_map[stop_name]
   start_global = module.get_global(start.index)
   end_global = module.get_global(end.index)
   start_addr = get_global_value(start_global)
@@ -190,7 +197,7 @@ def get_asm_strings(module, export_map):
 
   seg = find_segment_with_address(module, start_addr)
   if not seg:
-    exit_with_error('unable to find segment starting at __start_em_asm: %s' % start_addr)
+    exit_with_error(f'unable to find segment starting at __start_{section_name}: {start_addr}')
   seg, seg_offset = seg
 
   asm_strings = {}
@@ -225,9 +232,12 @@ def get_main_reads_params(module, export_map):
 
 def get_named_globals(module, exports):
   named_globals = {}
+  internal_start_stop_symbols = ('__start_em_asm', '__stop_em_asm',
+                                 '__start_em_lib_deps', '__stop_em_lib_deps',
+                                 '__em_lib_deps')
   for export in exports:
     if export.kind == webassembly.ExternType.GLOBAL:
-      if export.name in ('__start_em_asm', '__stop_em_asm') or export.name.startswith('__em_js__'):
+      if export.name in internal_start_stop_symbols or export.name.startswith('__em_js__'):
         continue
       g = module.get_global(export.index)
       named_globals[export.name] = str(get_global_value(g))
@@ -300,7 +310,8 @@ def extract_metadata(filename):
     # If main does not read its parameters, it will just be a stub that
     # calls __original_main (which has no parameters).
     metadata = {}
-    metadata['asmConsts'] = get_asm_strings(module, export_map)
+    metadata['asmConsts'] = get_section_strings(module, export_map, 'em_asm')
+    metadata['jsDeps'] = get_section_strings(module, export_map, 'em_lib_deps').values()
     metadata['declares'] = declares
     metadata['emJsFuncs'] = em_js_funcs
     metadata['exports'] = export_names
@@ -309,5 +320,4 @@ def extract_metadata(filename):
     metadata['invokeFuncs'] = invoke_funcs
     metadata['mainReadsParams'] = get_main_reads_params(module, export_map)
     metadata['namedGlobals'] = get_named_globals(module, exports)
-    # print("Metadata parsed: " + pprint.pformat(metadata))
     return metadata
